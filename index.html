@@ -12,6 +12,9 @@
   <meta property="og:title" content="Smashing Apparel — Tennis fans, welcome home.">
   <meta property="og:description" content="Cheeky, nostalgic, premium designs for the inner tennis fan in you.">
 
+  <!-- Lets CSS hide the form behind the button only when JS is running -->
+  <script>document.documentElement.classList.add('js');</script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Outfit:wght@400;500&display=swap" rel="stylesheet">
@@ -56,6 +59,61 @@
       }
     }
 
+    /* ------------------------- Button with CSS Character Stagger by Osmo [https://osmo.supply/] ------------------------- */
+
+    .btn-animate-chars {
+      color: #131313;
+      cursor: pointer;
+      border-radius: .25em;
+      flex-grow: 1;
+      justify-content: center;
+      align-items: center;
+      max-width: 12em;
+      padding: 1em;
+      font-size: 1em;
+      line-height: 1;
+      text-decoration: none;
+      display: flex;
+      position: relative;
+    }
+
+    .btn-animate-chars__text {
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    /* Characters */
+    .btn-animate-chars [data-button-animate-chars] {
+      overflow: hidden;
+      position: relative;
+      display: inline-block;
+    }
+
+    .btn-animate-chars [data-button-animate-chars] span {
+      display: inline-block;
+      position: relative;
+      text-shadow: 0px 1.3em currentColor;
+      transform: translateY(0em) rotate(0.001deg);
+      transition: transform 0.6s cubic-bezier(0.625, 0.05, 0, 1);
+    }
+
+    .btn-animate-chars:hover [data-button-animate-chars] span {
+      transform: translateY(-1.3em) rotate(0.001deg);
+    }
+
+    /* Background */
+    .btn-animate-chars__bg {
+      background-color: #efeeec;
+      border-radius: .25em;
+      position: absolute;
+      inset: 0;
+      transition: inset 0.6s cubic-bezier(0.625, 0.05, 0, 1);
+    }
+
+    .btn-animate-chars:hover .btn-animate-chars__bg {
+      inset: 0.125em;
+    }
+
     /* ------------------------- Page styles -------------------------
        All sizes are in em, based on the 16px body size at the 1440px
        Figma frame. Font sizes are only set on elements that sit directly
@@ -68,6 +126,7 @@
       --green-dark: #0c6646;
       --muted: #2b2b2b;
       --error: #b42318;
+      --ease: cubic-bezier(0.625, 0.05, 0, 1); /* same curve as the Osmo button */
 
       --font-display: "Instrument Serif", "Times New Roman", serif;
       --font-body: "Outfit", system-ui, -apple-system, sans-serif;
@@ -118,16 +177,70 @@
       line-height: 1.45;
     }
 
-    /* ---- Signup form ---- */
+    /* ---- Osmo button, brand version ----
+       Green fill, white text, square corners, 56px tall at 1440 to match the comp. */
+    .btn-animate-chars {
+      flex-grow: 0;
+      max-width: none;
+      padding: 0.75em 1.1em;  /* 15px 22px -> 56px tall */
+      font-family: inherit;
+      font-size: 1.25em;      /* 20px */
+      font-weight: 500;
+      color: #fff;
+      background: none;
+      border: 0;
+      border-radius: 0;
+    }
+    .btn-animate-chars__bg {
+      background-color: var(--green);
+      border-radius: 0;
+    }
+    .btn-animate-chars:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+    .btn-animate-chars[disabled] { opacity: 0.6; cursor: progress; }
+
+    /* ---- Signup: button first, form revealed on click ----
+       The button and the form share one grid cell. Opening fades the button
+       out and wipes the form in from the left. */
+    .signup-wrap {
+      display: grid;
+      max-width: 32.5em;      /* 520px */
+    }
+    .signup-wrap > * { grid-area: 1 / 1; }
+
+    .signup-open {
+      justify-self: start;
+      transition: opacity 0.3s ease, visibility 0s linear 0s;
+    }
+
     .signup {
       display: flex;
-      flex-wrap: wrap;
       gap: 0.75em;            /* 12px */
-      max-width: 32.5em;      /* 520px */
+      width: 100%;
+    }
+
+    .js .signup {
+      visibility: hidden;
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path 0.6s var(--ease), opacity 0.3s ease, visibility 0s linear 0.6s;
+    }
+
+    .signup-wrap.is-open .signup-open {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+    }
+
+    .js .signup-wrap.is-open .signup {
+      visibility: visible;
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+      transition: clip-path 0.6s var(--ease), opacity 0.3s ease, visibility 0s;
     }
 
     .signup input[type="email"] {
-      flex: 1 1 13.333em;     /* 240px */
+      flex: 1 1 auto;
       min-width: 0;
       height: 3.111em;        /* 56px */
       padding: 0 1em;         /* 18px */
@@ -145,24 +258,7 @@
       box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 25%, transparent);
     }
 
-    .signup button {
-      flex: 0 0 auto;
-      height: 2.8em;          /* 56px */
-      padding: 0 1.1em;       /* 22px */
-      font-family: inherit;
-      font-size: 1.25em;      /* 20px */
-      font-weight: 500;
-      color: #fff;
-      background: var(--green);
-      border: 0;
-      border-radius: 0;
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-    }
-
-    .signup button:hover { background: var(--green-dark); }
-    .signup button:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-    .signup button[disabled] { opacity: 0.6; cursor: progress; }
+    .signup .btn-animate-chars { flex: 0 0 auto; }
 
     .status {
       min-height: 1.4em;
@@ -214,7 +310,6 @@
       main { padding: 4.5em 1em 3em; }  /* 16px side gutter at 390 */
       h1 { font-size: 3.5em; }          /* 56px at 390 */
       .intro { font-size: 1.125em; }    /* 18px at 390 */
-      .signup button { flex: 1 1 100%; }
       .success { font-size: 1.75em; }
     }
   </style>
@@ -230,15 +325,27 @@
           + a big benefit of all the cheeky, nostalgic, premium designs for the inner tennis fan in you.
         </p>
 
-        <!-- Kit (ConvertKit) form 10242336. Posts directly to Kit; JS below handles it inline. -->
-        <form class="signup" id="signup"
-              action="https://app.kit.com/forms/10242336/subscriptions"
-              method="post" novalidate>
-          <label class="visually-hidden" for="email">Email address</label>
-          <input id="email" name="email_address" type="email" autocomplete="email"
-                 placeholder="Your email address" required>
-          <button type="submit">Stay in the loop</button>
-        </form>
+        <div class="signup-wrap" id="signup-wrap">
+          <!-- Step 1: the only thing showing by default -->
+          <button type="button" class="btn-animate-chars signup-open" id="signup-open"
+                  aria-label="Stay in the loop" aria-expanded="false" aria-controls="signup">
+            <span class="btn-animate-chars__bg"></span>
+            <span data-button-animate-chars="" class="btn-animate-chars__text">Stay in the loop</span>
+          </button>
+
+          <!-- Step 2: revealed on click. Kit (ConvertKit) form 10242336. -->
+          <form class="signup" id="signup"
+                action="https://app.kit.com/forms/10242336/subscriptions"
+                method="post" novalidate>
+            <label class="visually-hidden" for="email">Email address</label>
+            <input id="email" name="email_address" type="email" autocomplete="email"
+                   placeholder="Your email address" required>
+            <button type="submit" class="btn-animate-chars" aria-label="Sign up">
+              <span class="btn-animate-chars__bg"></span>
+              <span data-button-animate-chars="" class="btn-animate-chars__text">Sign up</span>
+            </button>
+          </form>
+        </div>
         <p class="status" id="status" role="status" aria-live="polite"></p>
 
         <p class="fineprint">
@@ -250,11 +357,49 @@
   </main>
 
   <script>
+    /* ------------------------- Button with CSS Character Stagger by Osmo ------------------------- */
+    function initButtonCharacterStagger() {
+      const offsetIncrement = 0.01; // Transition offset increment in seconds
+      const buttons = document.querySelectorAll('[data-button-animate-chars]');
+
+      buttons.forEach(button => {
+        const text = button.textContent; // Get the button's text content
+        button.innerHTML = ''; // Clear the original content
+
+        [...text].forEach((char, index) => {
+          const span = document.createElement('span');
+          span.textContent = char;
+          span.style.transitionDelay = `${index * offsetIncrement}s`;
+
+          // Handle spaces explicitly
+          if (char === ' ') {
+            span.style.whiteSpace = 'pre'; // Preserve space width
+          }
+
+          button.appendChild(span);
+        });
+      });
+    }
+
+    // Initialize Button Character Stagger Animation
+    document.addEventListener('DOMContentLoaded', () => {
+      initButtonCharacterStagger();
+    });
+
+    /* ------------------------- Signup: reveal + submit to Kit ------------------------- */
     (function () {
+      var wrap = document.getElementById('signup-wrap');
+      var openBtn = document.getElementById('signup-open');
       var form = document.getElementById('signup');
       var status = document.getElementById('status');
       var input = document.getElementById('email');
-      var button = form.querySelector('button');
+      var button = form.querySelector('button[type="submit"]');
+
+      openBtn.addEventListener('click', function () {
+        wrap.classList.add('is-open');
+        openBtn.setAttribute('aria-expanded', 'true');
+        input.focus({ preventScroll: true });
+      });
 
       function setStatus(msg, isError) {
         status.textContent = msg;
@@ -286,7 +431,7 @@
             });
           })
           .then(function () {
-            form.outerHTML = '<p class="success">You’re in. Check your inbox to confirm.</p>';
+            wrap.outerHTML = '<p class="success">You’re in. Check your inbox to confirm.</p>';
             setStatus('');
           })
           .catch(function (err) {
