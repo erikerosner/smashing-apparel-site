@@ -120,12 +120,13 @@
        on the body size, so em values never compound. */
 
     :root {
-      --ink: #0d0d0d;
-      --paper: #ffffff;
-      --green: #12805a;
-      --green-dark: #0c6646;
-      --muted: #2b2b2b;
-      --error: #b42318;
+      --bg: #012B1E;          /* deep court green */
+      --heading: #ffffff;     /* 15.4:1 on --bg */
+      --text: #F5F4F5;        /* 14.0:1 on --bg */
+      --placeholder: #93a9a3; /* 6.2:1 on --bg */
+      --ball: #DFFF4F;        /* tennis-ball yellow, 13.6:1 on --bg */
+      --green: #12805a;       /* CTA buttons, 3.1:1 against --bg */
+      --error: #FFB4A8;       /* 9.0:1 on --bg */
       --ease: cubic-bezier(0.625, 0.05, 0, 1); /* same curve as the Osmo button */
 
       --font-display: "Instrument Serif", "Times New Roman", serif;
@@ -138,14 +139,34 @@
 
     body {
       margin: 0;
-      background: var(--paper);
-      color: var(--ink);
+      color: var(--text);
+      /* Soft light from the top-left, falling off to a darker bottom-right */
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 70% at 15% 0%, rgba(59, 125, 91, 0.32), rgba(59, 125, 91, 0) 70%),
+        radial-gradient(ellipse 70% 60% at 100% 100%, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0) 70%);
+      background-attachment: fixed;
       font-family: var(--font-body);
       font-size: var(--size-font);
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Film grain over the background only: sits under the content, ignores clicks */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      opacity: 0.14;
+      mix-blend-mode: overlay;
+    }
+
     main {
+      position: relative;
+      z-index: 1;
       min-height: 100vh;
       min-height: 100svh;
       display: grid;
@@ -153,7 +174,54 @@
       padding: 4em 1.5em;
     }
 
+    /* ------------------------- Basic Custom Cursor by Osmo [https://osmo.supply/] ------------------------- */
+    .cursor {
+      z-index: 100;
+      background-color: #ff4c24;
+      border: 1px solid #ff4c24;
+      border-radius: 100em;
+      width: 1em;
+      height: 1em;
+      transition: background-color .375s cubic-bezier(.625, .05, 0, 1), height .375s cubic-bezier(.625, .05, 0, 1), width .375s cubic-bezier(.625, .05, 0, 1);
+      position: fixed;
+      inset: 0% auto auto 0%;
+      pointer-events: none;
+    }
+
+    body:has( a:hover) .cursor,
+    body:has( button:hover) .cursor,
+    body:has( [data-cursor]:hover) .cursor{
+      width: 3em;
+      height: 3em;
+      background-color: rgba(255, 76, 36, 0.3);
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .cursor {
+        display: none;
+      }
+    }
+
+    /* Smashing: tennis ball instead of the orange dot.
+       Yellow felt with a soft highlight, plus a white seam drawn as an SVG. */
+    .cursor {
+      background-color: var(--ball);
+      border-color: var(--ball);
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M14 8 Q52 50 14 92 M86 8 Q48 50 86 92' fill='none' stroke='%23ffffff' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 55%);
+      background-size: 100% 100%;
+      box-shadow: 0 0.125em 0.375em rgba(0, 0, 0, 0.35);
+    }
+
+    body:has( a:hover) .cursor,
+    body:has( button:hover) .cursor,
+    body:has( [data-cursor]:hover) .cursor{
+      background-color: rgba(223, 255, 79, 0.3);
+    }
+
     .hero {
+      position: relative;
       width: 100%;
       max-width: calc(var(--size-container) * 0.811); /* 1168px at 1440 */
       display: grid;
@@ -166,6 +234,7 @@
       margin: 0;
       font-family: var(--font-display);
       font-weight: 400;
+      color: var(--heading);
       font-size: 6.25em;      /* 100px */
       line-height: 0.95;
       letter-spacing: -0.01em;
@@ -195,7 +264,7 @@
       background-color: var(--green);
       border-radius: 0;
     }
-    .btn-animate-chars:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+    .btn-animate-chars:focus-visible { outline: 3px solid var(--ball); outline-offset: 2px; }
     .btn-animate-chars[disabled] { opacity: 0.6; cursor: progress; }
 
     /* ---- Signup: button first, form revealed on click ----
@@ -246,17 +315,18 @@
       padding: 0 1em;         /* 18px */
       font-family: inherit;
       font-size: 1.125em;     /* 18px */
-      color: var(--ink);
-      background: var(--paper);
-      border: 1.5px solid var(--ink);
+      color: var(--text);
+      background: transparent;
+      border: 1.5px solid var(--text);
       border-radius: 0;
       outline: none;
     }
 
     .signup input[type="email"]:focus-visible {
-      border-color: var(--green);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 25%, transparent);
+      border-color: var(--ball);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--ball) 30%, transparent);
     }
+    .signup input[type="email"]::placeholder { color: var(--placeholder); opacity: 1; }
 
     .signup .btn-animate-chars { flex: 0 0 auto; }
 
@@ -279,7 +349,7 @@
       max-width: 37.14em;     /* 520px */
       font-size: max(0.875em, 12px); /* 14px, never below 12px */
       line-height: 1.45;
-      color: var(--muted);
+      color: var(--text);
     }
 
     .visually-hidden {
@@ -356,6 +426,11 @@
       </div>
     </section>
   </main>
+
+  <!-- Osmo custom cursor, styled as a tennis ball -->
+  <div class="cursor" aria-hidden="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15/dist/gsap.min.js"></script>
 
   <script>
     /* ------------------------- Button with CSS Character Stagger by Osmo ------------------------- */
@@ -441,6 +516,24 @@
           });
       });
     })();
+    /* ------------------------- Basic Custom Cursor by Osmo ------------------------- */
+    function initBasicCustomCursor() {  
+      
+      gsap.set(".cursor", {xPercent:-50, yPercent: -50});
+
+      let xTo = gsap.quickTo(".cursor", "x", {duration: 0.6, ease: "power3"});
+      let yTo = gsap.quickTo(".cursor", "y", {duration: 0.6, ease: "power3"});
+
+      window.addEventListener("mousemove", e => {
+        xTo(e.clientX);
+        yTo(e.clientY);
+      });
+    }
+
+    // Initialize Basic Custom Cursor
+    document.addEventListener('DOMContentLoaded', () => {
+      initBasicCustomCursor();
+    });
   </script>
 </body>
 </html>
