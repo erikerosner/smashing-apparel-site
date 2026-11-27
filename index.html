@@ -225,6 +225,80 @@
       background-color: rgba(223, 255, 79, 0.3);
     }
 
+    /* ------------------------- Rotating Image Trail by Osmo [https://osmo.supply/] ------------------------- */
+    .rotating-image-trail {
+      width: 100vw;
+      height: 100vh;
+      position: absolute;
+    }
+
+    .rotating-image-trail__collection {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .rotating-image-trail__list {
+      grid-column-gap: 1em;
+      grid-row-gap: 1em;
+      flex-flow: wrap;
+      display: flex;
+    }
+
+    .rotating-image-trail__item {
+      z-index: 10;
+      pointer-events: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .rotating-image-trail__card {
+      aspect-ratio: 3 / 4;
+      width: 10vw;
+      position: relative;
+    }
+
+    .rotating-image-trail__card-img {
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    [data-trail-item="hidden"] {
+      transform: translate(-50%, -50%) scale(0) rotate(-20deg);
+      position: absolute;
+    }
+
+    [data-trail-item="visible"] {
+      transform: translate(-50%, -50%) scale(1) rotate(0.001deg);
+      transition: transform 0.4s cubic-bezier(0.625, 0.05, 0, 1);
+      position: absolute;
+    }
+
+    [data-trail-item="transition-out"] {
+      transform: translate(-50%, -50%) scale(0) rotate(180deg);
+      transition: transform 0.8s cubic-bezier(0.625, 0, 0.875, 0);
+      position: absolute;
+    }
+
+    /* Smashing: the trail is a fixed, click-through layer over the page (under the
+       tennis-ball cursor), and only the linked phrase in the intro spawns images. */
+    .rotating-image-trail {
+      position: fixed;
+      inset: 0 auto auto 0;
+      z-index: 50;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .trail-link {
+      text-decoration: underline;
+      text-decoration-color: var(--ball);
+    }
+
     .hero {
       position: relative;
       width: 100%;
@@ -397,7 +471,7 @@
 
       <div class="cta">
         <p class="intro">
-          Old-school tennis-inspired threads for a new generation of racquet enthusiasts.
+          <span class="trail-link" data-trail-target="">Old-school tennis-inspired threads</span> for a new generation of racquet enthusiasts.
           Made for the court, the clubhouse, and wherever the good times take you.
         </p>
         <p class="intro">
@@ -434,6 +508,38 @@
       </div>
     </section>
   </main>
+
+  <!-- Osmo rotating image trail. Placeholder images until real photos are ready. -->
+  <div data-trail-area="" class="rotating-image-trail" aria-hidden="true">
+    <div data-trail-collection="" class="rotating-image-trail__collection">
+      <div class="rotating-image-trail__list">
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-01.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-02.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-03.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-04.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-05.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-06.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-07.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+        <div data-trail-item="" class="rotating-image-trail__item">
+          <div class="rotating-image-trail__card"><img src="/images/trail/trail-08.svg" loading="eager" alt="" class="rotating-image-trail__card-img"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Osmo custom cursor, styled as a tennis ball -->
   <div class="cursor" aria-hidden="true"></div>
@@ -524,6 +630,89 @@
           });
       });
     })();
+    /* ------------------------- Rotating Image Trail by Osmo ------------------------- */
+    /* Smashing changes: mouse movement is read from the [data-trail-target] phrase
+       instead of the whole area, and the trail resets when the cursor leaves it. */
+    function initRotatingImageTrail() {
+      var area = document.querySelector("[data-trail-area]");
+      if (!area) return;
+
+      var target = document.querySelector("[data-trail-target]");
+      if (!target) return;
+
+      var collection = area.querySelector("[data-trail-collection]");
+      if (!collection) return;
+
+      var items = collection.querySelectorAll("[data-trail-item]");
+      if (!items.length) return;
+
+      // Distance logic
+      var index = 0;
+      var lastCloneX = null;
+      var lastCloneY = null;
+
+      var cardWidth = items[0].getBoundingClientRect().width;
+      var stepDistance = cardWidth * 0.5;
+
+      function spawnTrailItem(x, y) {
+        var original = items[index];
+        var clone = original.cloneNode(true);
+
+        clone.style.left = x + "px";
+        clone.style.top = y + "px";
+
+        clone.setAttribute("data-trail-item", "hidden");
+
+        area.appendChild(clone);
+
+        void clone.getBoundingClientRect();
+
+        clone.setAttribute("data-trail-item", "visible");
+
+        setTimeout(function () {
+          clone.setAttribute("data-trail-item", "transition-out");
+        }, 400);
+
+        setTimeout(function () {
+          clone.remove();
+        }, 1200);
+
+        index = (index + 1) % items.length;
+        lastCloneX = x;
+        lastCloneY = y;
+      }
+
+      // Mouse movement logic
+      target.addEventListener("mousemove", function (event) {
+        var rect = area.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
+
+        if (lastCloneX === null || lastCloneY === null) {
+          spawnTrailItem(x, y);
+          return;
+        }
+
+        var dx = x - lastCloneX;
+        var dy = y - lastCloneY;
+        var distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance >= stepDistance) {
+          spawnTrailItem(x, y);
+        }
+      });
+
+      target.addEventListener("mouseleave", function () {
+        lastCloneX = null;
+        lastCloneY = null;
+      });
+    }
+
+    // Initialize Rotating Image Trail
+    document.addEventListener("DOMContentLoaded", function () {
+      initRotatingImageTrail();
+    });
+
     /* ------------------------- Basic Custom Cursor by Osmo ------------------------- */
     function initBasicCustomCursor() {  
       
